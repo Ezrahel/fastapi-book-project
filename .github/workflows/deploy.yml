@@ -14,16 +14,18 @@ jobs:
             - name: Checkout Code
               uses: actions/checkout@v4
 
-            - name: Set Up Python
-              uses: actions/setup-python@v4
-              with:
-                python-version: python '3.12.6'
-
-            - name: Install Dependencies
+            - name: Deploy to Azure VM
+              env:
+                SERVER_HOST: 4.222.232.53   # Your Azure VM public IP
+                SERVER_USER: ezrahel        # Your VM username
+                SERVER_SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}  # SSH key stored in GitHub secrets
               run: |
-                python -m pip install --upgrade pip
-                pip install -r requirements.txt
+                echo "$SERVER_SSH_KEY" > private_key.pem
+                chmod 600 private_key.pem
 
-            - name: Deploy API
-              run: |
-                
+                ssh -o StrictHostKeyChecking=no -i private_key.pem $SERVER_USER@$SERVER_HOST << 'EOF'
+                cd ~/fastapi-book-project
+                git pull origin main
+                docker-compose down
+                docker-compose up --build -d
+                EOF
