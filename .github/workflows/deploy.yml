@@ -25,8 +25,9 @@ jobs:
                 chmod 600 private_key.pem
 
                 ssh -o StrictHostKeyChecking=no -i private_key.pem $SERVER_USER@$SERVER_HOST << 'EOF'
+                cd ~/fastapi-book-project
                 docker login -u "${{ secrets.DOCKER_USERNAME }}" -p "${{ secrets.DOCKER_PASSWORD }}"
-                docker pull $DOCKER_IMAGE
+                docker pull ezrahel/fastapi-app:latest
                 docker-compose down  
                 docker-compose up -d --build
                 EOF
