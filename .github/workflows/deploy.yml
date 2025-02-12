@@ -20,10 +20,11 @@ jobs:
                 SERVER_USER: ezrahel        # Your VM username
                 SERVER_SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}  # SSH key stored in GitHub secrets
               run: |
-                echo "$SERVER_SSH_KEY" > private_key.pem
+                echo "$SERVER_SSH_KEY" | sed 's/\\n/\n/g' > private_key.pem
                 chmod 600 private_key.pem
+                ls -l private_key.pem
 
-                ssh -o StrictHostKeyChecking=no -i private_key.pem $ezrahel@$4.222.232.53 << 'EOF'
+                ssh -o StrictHostKeyChecking=no -i private_key.pem $SERVER_USER@$SERVER_HOST << 'EOF'
                 cd ~/fastapi-book-project
                 git pull origin main
                 docker-compose down
