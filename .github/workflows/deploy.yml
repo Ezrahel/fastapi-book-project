@@ -20,9 +20,11 @@ jobs:
                 SERVER_USER: ezrahel        # Your VM username
                 SERVER_SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}  # SSH key stored in GitHub secrets
               run: |
-                echo "$SERVER_SSH_KEY" | sed 's/\\n/\n/g' > private_key.pem
+                printf "%s" "$SERVER_SSH_KEY" > private_key.pem
                 chmod 600 private_key.pem
                 ls -l private_key.pem
+
+                ssh -o StrictHostKeyChecking=no -i private_key.pem $SERVER_USER@$SERVER_HOST "echo 'SSH connection successful'"
 
                 ssh -o StrictHostKeyChecking=no -i private_key.pem $SERVER_USER@$SERVER_HOST << 'EOF'
                 cd ~/fastapi-book-project
