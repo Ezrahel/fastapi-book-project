@@ -14,9 +14,9 @@ jobs:
             - name: Checkout Code
               uses: actions/checkout@v4
 
-            - name: Decode and Store SSH Key
+            - name: Store SSH Key
               run: |
-                echo "${{ secrets.SERVER_SSH_KEY }}" | base64 --decode > private_key.pem
+                echo "${{ secrets.SERVER_SSH_KEY }}" > private_key.pem
                 chmod 600 private_key.pem
 
             - name: Deploy to Azure VM
