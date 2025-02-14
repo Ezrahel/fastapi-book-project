@@ -1,4 +1,4 @@
-name: CD Pipeline
+name: Deployment Pipeline
 
 on:
     push:
@@ -7,21 +7,28 @@ on:
 
 jobs:
     deploy:
+        name: Deploy API
         runs-on: ubuntu-latest
 
-        steps:
-            - name: Checkout code
+        steps: 
+            - name: Checkout Code
               uses: actions/checkout@v4
 
             - name: Deploy to Azure VM
-              uses: appleboy/ssh-action@master
-              with:
-                  host: 4.222.232.53
-                  username: ${{ secrets.SERVER_USERNAME }}
-                  key: ${{ secrets.SSH_PRIVATE_KEY }}
-                  script: |
-                      cd ~/fastapi-book-project
-                      docker login -u "${{ secrets.DOCKER_USERNAME }}" -p "${{ secrets.DOCKER_PASSWORD }}"
-                      docker pull ${{ secrets.DOCKER_USERNAME }}/fastapi-app:latest
-                      docker compose down
-                      docker compose up -d --build
+              env:
+                SERVER_HOST: 4.222.232.53   # Your Azure VM public IP
+                SERVER_USER: ezrahel        # Your VM username
+                SERVER_SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}  # SSH key stored in GitHub secrets
+                DOCKER_IMAGE: ${{ secrets.DOCKER_USERNAME }}/fastapi-app:latest
+              run: |
+                printf "%s" "$SERVER_SSH_KEY" > private_key.pem
+                chmod 600 private_key.pem
+
+                ssh -o StrictHostKeyChecking=no -i private_key.pem $SERVER_USER@$SERVER_HOST << 'EOF'
+                cd ~/fastapi-book-project
+                git pull origin main
+                docker login -u "${{ secrets.DOCKER_USERNAME }}" -p "${{ secrets.DOCKER_PASSWORD }}"
+                docker pull ezrahel/fastapi-app:latest
+                docker-compose down  
+                docker-compose up -d --build
+                EOF
