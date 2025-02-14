@@ -1,4 +1,4 @@
-name: Deployment Pipeline
+name: CD Pipeline
 
 on:
     push:
@@ -7,29 +7,21 @@ on:
 
 jobs:
     deploy:
-        name: Deploy API
         runs-on: ubuntu-latest
 
-        steps: 
-            - name: Checkout Code
+        steps:
+            - name: Checkout code
               uses: actions/checkout@v4
 
-            - name: Store SSH Key
-              run: |
-                echo "${{ secrets.SERVER_SSH_KEY }}" > private_key.pem
-                chmod 600 private_key.pem
-
             - name: Deploy to Azure VM
-              env:
-                SERVER_HOST: 4.222.232.53  
-                SERVER_USER: ezrahel        
-                DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-                DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-              run: |
-                ssh -o StrictHostKeyChecking=no -i private_key.pem $SERVER_USER@$SERVER_HOST << 'EOF'
-                cd ~/fastapi-book-project
-                echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-                docker pull $DOCKER_USERNAME/fastapi-app:latest
-                docker-compose down  
-                docker-compose up -d --build
-                EOF
+              uses: appleboy/ssh-action@master
+              with:
+                  host: 4.222.232.53
+                  username: ${{ secrets.SERVER_USERNAME }}
+                  key: ${{ secrets.SSH_PRIVATE_KEY }}
+                  script: |
+                      cd ~/fastapi-book-project
+                      docker login -u "${{ secrets.DOCKER_USERNAME }}" -p "${{ secrets.DOCKER_PASSWORD }}"
+                      docker pull ${{ secrets.DOCKER_USERNAME }}/fastapi-app:latest
+                      docker compose down
+                      docker compose up -d --build
