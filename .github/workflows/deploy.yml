@@ -14,20 +14,26 @@ jobs:
             - name: Checkout Code
               uses: actions/checkout@v4
 
+            - name: Set up SSH Key
+              run: |
+                echo "$SERVER_SSH_KEY" > private_key.pem
+                chmod 600 private_key.pem
+
             - name: Deploy to Azure VM
               env:
                 SERVER_HOST: 4.222.232.53   # Your Azure VM public IP
                 SERVER_USER: ezrahel        # Your VM username
                 SERVER_SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}  # SSH key stored in GitHub secrets
-                DOCKER_IMAGE: ${{ secrets.DOCKER_USERNAME }}/fastapi-app:latest
+                DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}  # DockerHub username stored in secrets
+                DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}  # DockerHub password stored in secrets
               run: |
-                printf "%s" "$SERVER_SSH_KEY" > private_key.pem
-                chmod 600 private_key.pem
-
                 ssh -o StrictHostKeyChecking=no -i private_key.pem $SERVER_USER@$SERVER_HOST << 'EOF'
                 cd ~/fastapi-book-project
-                docker login -u "${{ secrets.DOCKER_USERNAME }}" -p "${{ secrets.DOCKER_PASSWORD }}"
-                docker pull ezrahel/fastapi-app:latest
+
+                echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+
+                docker pull $DOCKER_USERNAME/fastapi-app:latest
+
                 docker-compose down  
                 docker-compose up -d --build
                 EOF
