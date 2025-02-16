@@ -36,7 +36,7 @@ jobs:
                 "status": "success",
                 "message": "🎊✈️🏗️Test passes successfully for PR ${{ github.event, pull_request.number}}.",
                 "name": "${{ github.username}} on the beat"
-                }' ${{secrets.SLACK_TARGET_URL}}
+                }' ${{secrets.TELEX_WEBHOOK_URL}}
 
             - name: Notify Telex of Test Failure
               if: failure()
@@ -47,4 +47,4 @@ jobs:
                 "status": "failure",
                 "message": "❌❌🛑 Test failed for PR ${{github.event, pull_request.number}}",
                 "name": "${{github.username}}"
-                }' ${{secrets.SLACK_TARGET_URL}}
+                }' ${{secrets.TELEX_WEBHOOK_URL}}
