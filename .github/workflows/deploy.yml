@@ -16,7 +16,7 @@ jobs:
 
             - name: Deploy to Azure VM
               env:
-                SERVER_HOST: 4.222.232.53   # Your Azure VM public IP
+                SERVER_HOST: 102.37.138.135   # Your Azure VM public IP
                 SERVER_USER: ezrahel        # Your VM username
                 SERVER_SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}  # SSH key stored in GitHub secrets
                 DOCKER_IMAGE: ${{ secrets.DOCKER_USERNAME }}/fastapi-app:latest

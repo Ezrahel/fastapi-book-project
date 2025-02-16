@@ -13,7 +13,7 @@ jobs:
             - name: Set up Python
               uses: actions/setup-python@v4
               with:
-                  python-version: '3.x'
+                  python-version: '3.12.6'
 
             - name: Install dependencies
               run: |
@@ -26,3 +26,25 @@ jobs:
               run: |
                   source venv/bin/activate
                   pytest
+
+            - name: Notify Telex of Test Success
+              if: success()
+              run: |
+                CURL -X POST -H "Content-Type: application/json" -d '{
+                "event_name": "ci_pipeline",
+                :username: "GITHUB Actions",
+                "status": "success",
+                "message": "🎊✈️🏗️Test passes successfully for PR ${{ github.event, pull_request.number}}.",
+                "name": "${{ github.username}} on the beat"
+                }' ${{secrets.SLACK_TARGET_URL}}
+
+            - name: Notify Telex of Test Failure
+              if: failure()
+              run: |
+                curl -X POST -H "Content-Type: application/json" -d '{
+                "event_name": "ci_pipeline",
+                "username": "Github Actions",
+                "status": "failure",
+                "message": "❌❌🛑 Test failed for PR ${{github.event, pull_request.number}}",
+                "name": "${{github.username}}"
+                }' ${{secrets.SLACK_TARGET_URL}}
